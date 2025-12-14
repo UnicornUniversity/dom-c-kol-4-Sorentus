@@ -1,3 +1,5 @@
+//TODO add imports if needed
+
 // --------------------
 // Data
 // --------------------
@@ -86,7 +88,7 @@ function randomBirthday(minAge, maxAge, usedDates) {
 }
 
 /**
- * Spočítá věk podle data narození
+ * Spočítá věk podle data narození (desetinné číslo)
  * @param {string} birthdate ISO string
  * @returns {number} věk
  */
@@ -95,17 +97,14 @@ function calculateAge(birthdate) {
     const today = new Date();
 
     let age = today.getFullYear() - birth.getFullYear();
-    if (
-        today.getMonth() < birth.getMonth() ||
-        (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())
-    ) {
-        age--;
-    }
+    age += (today.getMonth() - birth.getMonth()) / 12;
+    age += (today.getDate() - birth.getDate()) / 365.25;
+
     return age;
 }
 
 // --------------------
-// Hlavní funkce aplikace
+// Hlavní funkce
 // --------------------
 
 /**
@@ -175,13 +174,13 @@ export function getEmployeeStatistics(employees) {
 
     const total = employees.length;
 
-    const averageAge =
-        Math.round((ages.reduce((s, a) => s + a, 0) / total) * 10) / 10;
+    const averageAge = Math.round((ages.reduce((s, a) => s + a, 0) / total) * 10) / 10;
 
-    const median = (arr) =>
-        arr.length % 2 === 0
-            ? (arr[arr.length / 2 - 1] + arr[arr.length / 2]) / 2
-            : arr[Math.floor(arr.length / 2)];
+    const median = (arr, roundToInt = false) => {
+        const mid = Math.floor(arr.length / 2);
+        const med = arr.length % 2 === 0 ? (arr[mid - 1] + arr[mid]) / 2 : arr[mid];
+        return roundToInt ? Math.round(med) : med;
+    };
 
     return {
         total,
@@ -190,11 +189,11 @@ export function getEmployeeStatistics(employees) {
         workload30,
         workload40,
         averageAge,
-        minAge: ages[0],
-        maxAge: ages[ages.length - 1],
-        medianAge: median(ages),
-        medianWorkload: median(workloadsArr),
-        averageWomenWorkload: womenCount ? womenWorkloadSum / womenCount : 0,
+        minAge: Math.round(ages[0]),
+        maxAge: Math.round(ages[ages.length - 1]),
+        medianAge: median(ages, true),
+        medianWorkload: median(workloadsArr, true),
+        averageWomenWorkload: womenCount ? Math.round((womenWorkloadSum / womenCount) * 10) / 10 : 0,
         sortedByWorkload: [...employees].sort((a, b) => a.workload - b.workload)
     };
 }
